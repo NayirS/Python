@@ -50,4 +50,4 @@ q, r = divmod_custom(17, 5)
 
 importer des modules 
 " exemples import" 
-
+si la relation commence par  a un ou possede un le plus propice et d'utiliser un heritage ( on parle des class )

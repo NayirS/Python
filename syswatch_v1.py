@@ -1,49 +1,51 @@
-import platform
-import psutil
+import collector  # Importation fichier collector 
 
-def afficher_infos_systeme():
-    print("\n=== Système ===")
-    print(f"OS           : {platform.system()}")
-    print(f"Version      : {platform.release()}")
-    print(f"Architecture : {platform.machine()}")
-    print(f"Processeur   : {platform.processor()}")
+def octets_vers_go(octets):
+    """Convertit des octets en Go formatés (string)."""
+    go = octets / (1024 ** 3)
+    return f"{go:.2f} Go"
 
-def afficher_infos_cpu():
-    print("\n=== CPU ===")
-    nb_physiques = psutil.cpu_count(logical=False)
-    nb_logiques = psutil.cpu_count(logical=True)
-    usage = psutil.cpu_percent(interval=1)
+def afficher_infos_globales(data):
+    # On formate la date proprement
+    date_str = data['timestamp'].strftime("%d/%m/%Y à %H:%M:%S")
+    print(f"=== Rapport système du {date_str} ===")
 
-    print(f"Coeurs physiques : {nb_physiques}")
-    print(f"Coeurs logiques  : {nb_logiques}")
-    print(f"Utilisation      : {usage}%")
+def afficher_systeme(data_sys):
+    print("\n--- SYSTÈME ---")
+    print(f"OS        : {data_sys['os']}")
+    print(f"Version   : {data_sys['version']}")
+    print(f"Machine   : {data_sys['hostname']}")
 
-def afficher_infos_memoire():
-    print("\n=== Mémoire ===")
-    mem = psutil.virtual_memory()
+def afficher_cpu(data_cpu):
+    print("\n--- CPU ---")
+    print(f"Physiques : {data_cpu['coeurs_physiques']}")
+    print(f"Logiques  : {data_cpu['coeurs_logiques']}")
+    print(f"Utilisation : {data_cpu['utilisation']}%")
+
+def afficher_memoire(data_mem):
+    print("\n--- MÉMOIRE ---")
+    # On utilise notre fonction de conversion ici
+    total = octets_vers_go(data_mem['total'])
+    dispo = octets_vers_go(data_mem['disponible'])
     
-    # Conversion en Go (1024 puissance 3)
-    total_go = mem.total / (1024 ** 3)
-    dispo_go = mem.available / (1024 ** 3)
-    
-    print(f"Total       : {total_go:.2f} Go")
-    print(f"Disponible  : {dispo_go:.2f} Go")
-    print(f"Utilisation : {mem.percent}%")
+    print(f"Total     : {total}")
+    print(f"Dispo     : {dispo}")
+    print(f"Utilisé   : {data_mem['pourcentage']}%")
 
-def afficher_infos_disques():
-    print("\n=== Disques ===")
-    partitions = psutil.disk_partitions()
-    
-    for p in partitions:
-        try:
-            usage = psutil.disk_usage(p.mountpoint)
-            print(f"{p.mountpoint} : {usage.percent}% utilisé")
-        except PermissionError:
-            print(f"{p.mountpoint} : Accès refusé")
+def afficher_disques(liste_disques):
+    print("\n--- DISQUES ---")
+    for disque in liste_disques:
+        total = octets_vers_go(disque['total'])
+        print(f"[{disque['point_montage']}] : {disque['pourcentage']}% (Total: {total})")
 
+#Affichage principal
 if __name__ == "__main__":
-    print("=== SysWatch v1.0 ===")
-    afficher_infos_systeme()
-    afficher_infos_cpu()
-    afficher_infos_memoire()
-    afficher_infos_disques()
+    print("Collecte des données en cours... (Patientez 1s)")
+    
+    donnees = collector.collecter_tout()
+    
+    afficher_infos_globales(donnees)
+    afficher_systeme(donnees['systeme'])
+    afficher_cpu(donnees['cpu'])
+    afficher_memoire(donnees['memoire'])
+    afficher_disques(donnees['disques'])
