@@ -54,7 +54,8 @@ class Book(BaseModel):
         if 'total_copies' in values and v > values['total_copies']:
             raise ValueError("Erreur stock")
         return v
-
+    
+    # j'ai utiliser l'ia pour un faux exemple 
     class Config:
         schema_extra = {
             "example": {
@@ -81,6 +82,7 @@ class Loan(BaseModel):
 
     class Config:
         schema_extra = {
+            #Fake client exemple 
             "example": {
                 "id": 500,
                 "book_id": 101,
